@@ -1,0 +1,8 @@
+Version: 2.1
+Date: 2025-10-04
+Changes:
+- Updated Instagram download instructions for 2025
+- Added search/filter functionality in all user lists
+- Improved UI with highlighted elements
+- Critical emphasis on JSON format (not HTML)
+- Cache busting for CSS/JS files

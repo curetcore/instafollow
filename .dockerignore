@@ -2,11 +2,12 @@
 .git
 .gitignore
 
-# Documentation
+# Documentation (keep version.txt)
 README.md
 PROYECTO-COMPLETO.md
 QUICKSTART.md
 docs/
+!version.txt
 
 # Scripts
 deploy.sh
