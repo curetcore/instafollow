@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Analyzer - Analiza tus Seguidores</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Instagram Analyzer</h1>
+            <p class="subtitle">Descubre quién no te sigue de vuelta</p>
+        </header>
+
+        <main>
+            <!-- Sección de instrucciones -->
+            <div class="instructions-card">
+                <h2>📝 Cómo usar</h2>
+                <ol>
+                    <li>Ve a Instagram → Configuración → Seguridad → Descargar información</li>
+                    <li>Selecciona "Seguidores y seguidos" en formato JSON</li>
+                    <li>Descarga los archivos <code>followers.json</code> y <code>following.json</code></li>
+                    <li>Súbelos aquí y analiza</li>
+                </ol>
+            </div>
+
+            <!-- Sección de carga de archivos -->
+            <div class="upload-section">
+                <div class="upload-box" id="followersUpload">
+                    <div class="upload-content">
+                        <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <h3>Seguidores</h3>
+                        <p>Arrastra <strong>followers.json</strong> aquí</p>
+                        <input type="file" id="followersFile" accept=".json" hidden>
+                        <button class="btn-upload" onclick="document.getElementById('followersFile').click()">
+                            Seleccionar archivo
+                        </button>
+                        <span class="file-name" id="followersFileName"></span>
+                    </div>
+                </div>
+
+                <div class="upload-box" id="followingUpload">
+                    <div class="upload-content">
+                        <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <h3>Seguidos</h3>
+                        <p>Arrastra <strong>following.json</strong> aquí</p>
+                        <input type="file" id="followingFile" accept=".json" hidden>
+                        <button class="btn-upload" onclick="document.getElementById('followingFile').click()">
+                            Seleccionar archivo
+                        </button>
+                        <span class="file-name" id="followingFileName"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de análisis -->
+            <div class="analyze-section">
+                <button id="analyzeBtn" class="btn-analyze" disabled>
+                    Analizar Datos
+                </button>
+            </div>
+
+            <!-- Resultados -->
+            <div id="results" class="results-section" style="display: none;">
+                <h2>📈 Resultados</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Seguidores</h3>
+                        <p class="stat-number" id="followersCount">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Seguidos</h3>
+                        <p class="stat-number" id="followingCount">0</p>
+                    </div>
+                    <div class="stat-card highlight">
+                        <h3>No te siguen</h3>
+                        <p class="stat-number" id="notFollowingBackCount">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Amigos mutuos</h3>
+                        <p class="stat-number" id="mutualCount">0</p>
+                    </div>
+                </div>
+
+                <div class="results-tabs">
+                    <button class="tab-btn active" data-tab="notFollowing">No te siguen</button>
+                    <button class="tab-btn" data-tab="mutual">Amigos mutuos</button>
+                    <button class="tab-btn" data-tab="fans">Tus fans</button>
+                </div>
+
+                <div class="tab-content active" id="notFollowing">
+                    <div class="list-header">
+                        <h3>Usuarios que sigues pero no te siguen</h3>
+                        <button class="btn-export" id="exportNotFollowing">Exportar lista</button>
+                    </div>
+                    <div class="user-list" id="notFollowingList"></div>
+                </div>
+
+                <div class="tab-content" id="mutual">
+                    <div class="list-header">
+                        <h3>Amigos mutuos (se siguen mutuamente)</h3>
+                        <button class="btn-export" id="exportMutual">Exportar lista</button>
+                    </div>
+                    <div class="user-list" id="mutualList"></div>
+                </div>
+
+                <div class="tab-content" id="fans">
+                    <div class="list-header">
+                        <h3>Te siguen pero tú no los sigues</h3>
+                        <button class="btn-export" id="exportFans">Exportar lista</button>
+                    </div>
+                    <div class="user-list" id="fansList"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>🔒 Tus datos se procesan localmente. Nada se envía a ningún servidor.</p>
+            <p class="footer-note">Hecho con ❤️ para la comunidad</p>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
