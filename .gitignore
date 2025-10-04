@@ -43,7 +43,7 @@ temp/
 # User data (never commit real user data)
 *.json.backup
 followers_*.json
-following*.json
+following_*.json
 !followers_example.json
 !following_example.json
 !package.json

@@ -1,0 +1,94 @@
+{
+  "relationships_following": [
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/maria_garcia23",
+          "value": "maria_garcia23",
+          "timestamp": 1698765432
+        }
+      ]
+    },
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/tech_insider",
+          "value": "tech_insider",
+          "timestamp": 1698754321
+        }
+      ]
+    },
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/foodie_paradise",
+          "value": "foodie_paradise",
+          "timestamp": 1698743210
+        }
+      ]
+    },
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/luis_fernandez",
+          "value": "luis_fernandez",
+          "timestamp": 1698432109
+        }
+      ]
+    },
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/travel_goals",
+          "value": "travel_goals",
+          "timestamp": 1698421098
+        }
+      ]
+    },
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/diego_sanchez_photo",
+          "value": "diego_sanchez_photo",
+          "timestamp": 1698210987
+        }
+      ]
+    },
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/fitness_motivation",
+          "value": "fitness_motivation",
+          "timestamp": 1698199876
+        }
+      ]
+    },
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/pedro_morales_fitness",
+          "value": "pedro_morales_fitness",
+          "timestamp": 1698098765
+        }
+      ]
+    },
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/fashion_trends",
+          "value": "fashion_trends",
+          "timestamp": 1698087654
+        }
+      ]
+    },
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/alejandro_torres",
+          "value": "alejandro_torres",
+          "timestamp": 1697876543
+        }
+      ]
+    }
+  ]
+}
