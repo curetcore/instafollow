@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instagram Analyzer - Analiza tus Seguidores</title>
-    <link rel="stylesheet" href="css/styles.css?v=5.0.2">
+    <link rel="stylesheet" href="css/styles.css?v=5.1">
 </head>
 <body>
     <header>
@@ -142,6 +142,12 @@
                         <h3>Usuarios que sigues pero no te siguen</h3>
                         <button class="btn-export" id="exportNotFollowing">Exportar lista</button>
                     </div>
+                    <div class="progress-info" id="progressNotFollowing">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFillNotFollowing"></div>
+                        </div>
+                        <span class="progress-text" id="progressTextNotFollowing">0 de 0 revisados</span>
+                    </div>
                     <div class="search-box">
                         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -196,6 +202,6 @@
         </footer>
     </div>
 
-    <script src="js/app.js?v=5.0.2"></script>
+    <script src="js/app.js?v=5.1"></script>
 </body>
 </html>

@@ -1,32 +1,19 @@
-Version: 5.0.2
+Version: 5.1
 Date: 2025-10-04
 Changes:
+- Added click-to-review functionality: click any user to mark as reviewed
+- Visual check mark (✓) appears for reviewed users
+- Progress bar shows review progress for "No te siguen" list
+- Reviewed status saved in localStorage (persists between sessions)
+- All insight cards now show complete user lists (not limited to 10)
+- Insight card users are clickable with review functionality
+- Insight card users show note indicator (📝) if they have notes
+- Links in insight cards open Instagram profile in new tab
+- Reviewed users have subtle green background
+- Better visual feedback and user experience
+
+Previous v5.0.2 changes:
 - Added support for removed_suggestions.json (sugerencias de Instagram que eliminaste)
 - Added support for recent_follow_requests.json (solicitudes permanentes/antiguas)
 - Now recognizes all 12 different Instagram data files
 - Fixed file type detection for these additional files
-
-Previous v5.0.1 changes:
-- Fixed issue with following.json parsing
-- Instagram changed format: following.json uses 'title' field instead of 'value'
-- Now supports both old and new Instagram JSON formats
-- Handles multiple data structure variations correctly
-
-Previous v5.0 changes:
-- MAJOR UPDATE: Now supports loading entire Instagram data folder
-- Replaced individual file uploads with single folder selection
-- Automatically detects and processes all JSON files from Instagram export
-- Added support for additional Instagram data files:
-  - Close friends list
-  - Recently unfollowed profiles (with dates)
-  - Pending follow requests sent
-  - Received follow requests
-  - Blocked profiles
-  - Restricted profiles
-  - Favorited profiles
-- New "Más insights" tab showing additional data cards
-- Each insight card shows count and recent entries
-- Timestamps shown where available (unfollows, requests)
-- Improved file detection with visual feedback
-- Shows loading status for each file
-- Backwards compatible with basic followers/following analysis

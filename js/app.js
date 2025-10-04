@@ -39,6 +39,9 @@ function init() {
     
     // Cargar notas guardadas
     loadNotesFromLocalStorage();
+    
+    // Cargar usuarios revisados
+    loadReviewedFromLocalStorage();
 }
 
 // Configurar acordeón
@@ -292,6 +295,9 @@ function displayResults() {
 
     // Mostrar insights si hay datos adicionales
     displayInsights();
+    
+    // Actualizar progreso inicial
+    updateProgress();
 
     // Mostrar sección de resultados
     resultsSection.style.display = 'block';
@@ -400,7 +406,11 @@ function createInsightCard(title, icon, count, label, users, showDate = false) {
     const card = document.createElement('div');
     card.className = 'insight-card';
     
-    const usersList = users.slice(0, 10).map(user => {
+    // Mostrar TODOS los usuarios, no solo 10
+    const usersList = users.map(user => {
+        const username = user.username || user;
+        const isReviewed = reviewedUsers.has(username);
+        const hasNote = userNotes[username];
         const dateStr = showDate && user.timestamp ? 
             new Date(user.timestamp * 1000).toLocaleDateString('es-ES', { 
                 day: 'numeric', 
@@ -409,8 +419,21 @@ function createInsightCard(title, icon, count, label, users, showDate = false) {
             }) : '';
             
         return `
-            <div class="insight-item">
-                <span class="insight-username">@${user.username}</span>
+            <div class="insight-item ${isReviewed ? 'reviewed' : ''}" 
+                 data-username="${username}" 
+                 onclick="toggleReviewed('${username}')"
+                 style="cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <a href="https://instagram.com/${username}" 
+                       target="_blank" 
+                       class="insight-username" 
+                       onclick="event.stopPropagation()"
+                       style="text-decoration: none; color: var(--text-primary);">
+                        @${username}
+                    </a>
+                    ${isReviewed ? '<span class="check-mark">✓</span>' : ''}
+                    ${hasNote ? '<span class="note-indicator" title="' + userNotes[username] + '">📝</span>' : ''}
+                </div>
                 ${dateStr ? `<span class="insight-date">${dateStr}</span>` : ''}
             </div>
         `;
@@ -425,7 +448,6 @@ function createInsightCard(title, icon, count, label, users, showDate = false) {
         ${users.length > 0 ? `
             <div class="insight-list">
                 ${usersList}
-                ${users.length > 10 ? `<div class="insight-item"><em>y ${users.length - 10} más...</em></div>` : ''}
             </div>
         ` : ''}
     `;
@@ -446,28 +468,32 @@ function displayUserList(elementId, users) {
         const initial = username.charAt(0).toUpperCase();
         const hasNote = userNotes[username];
         const noteText = hasNote ? userNotes[username] : '';
+        const isReviewed = reviewedUsers.has(username);
         
         return `
-            <div class="user-item">
+            <div class="user-item ${isReviewed ? 'reviewed' : ''}" data-username="${username}" onclick="toggleReviewed('${username}')">
                 <div class="user-avatar">${initial}</div>
                 <div class="user-info">
-                    <div class="username">@${username}</div>
+                    <div class="username">
+                        @${username}
+                        ${isReviewed ? '<span class="check-mark">✓</span>' : ''}
+                    </div>
                     ${hasNote ? `<div class="user-note">${noteText}</div>` : ''}
                     <div class="user-actions">
-                        <a href="https://instagram.com/${username}" target="_blank" class="action-btn action-profile" title="Ver perfil">
+                        <a href="https://instagram.com/${username}" target="_blank" class="action-btn action-profile" title="Ver perfil" onclick="event.stopPropagation()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                                 <polyline points="15 3 21 3 21 9"></polyline>
                                 <line x1="10" y1="14" x2="21" y2="3"></line>
                             </svg>
                         </a>
-                        <button class="action-btn action-copy" onclick="copyUsername('${username}')" title="Copiar username">
+                        <button class="action-btn action-copy" onclick="event.stopPropagation(); copyUsername('${username}')" title="Copiar username">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                             </svg>
                         </button>
-                        <button class="action-btn action-note ${hasNote ? 'has-note' : ''}" onclick="toggleNote('${username}')" title="${hasNote ? `Ver/Editar nota: "${noteText}"` : 'Agregar nota'}">
+                        <button class="action-btn action-note ${hasNote ? 'has-note' : ''}" onclick="event.stopPropagation(); toggleNote('${username}')" title="${hasNote ? `Ver/Editar nota: "${noteText}"` : 'Agregar nota'}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                 <polyline points="14 2 14 8 20 8"></polyline>
@@ -659,6 +685,66 @@ function fallbackCopy(text) {
 
 // Objeto global para notas de usuarios
 let userNotes = {};
+
+// Set global para usuarios revisados
+let reviewedUsers = new Set();
+
+// Función para marcar usuario como revisado
+function toggleReviewed(username) {
+    if (reviewedUsers.has(username)) {
+        reviewedUsers.delete(username);
+    } else {
+        reviewedUsers.add(username);
+    }
+    saveReviewedToLocalStorage();
+    updateReviewedStatus(username);
+}
+
+// Guardar usuarios revisados en localStorage
+function saveReviewedToLocalStorage() {
+    localStorage.setItem('instagramAnalyzerReviewed', JSON.stringify([...reviewedUsers]));
+}
+
+// Cargar usuarios revisados desde localStorage
+function loadReviewedFromLocalStorage() {
+    const saved = localStorage.getItem('instagramAnalyzerReviewed');
+    if (saved) {
+        reviewedUsers = new Set(JSON.parse(saved));
+    }
+}
+
+// Actualizar estado visual de revisado
+function updateReviewedStatus(username) {
+    const userElements = document.querySelectorAll(`.user-item[data-username="${username}"]`);
+    userElements.forEach(element => {
+        if (reviewedUsers.has(username)) {
+            element.classList.add('reviewed');
+        } else {
+            element.classList.remove('reviewed');
+        }
+    });
+    
+    // Actualizar progreso
+    updateProgress();
+}
+
+// Actualizar barra de progreso
+function updateProgress() {
+    // Actualizar progreso de "No te siguen"
+    const notFollowingReviewed = state.notFollowingBack.filter(u => reviewedUsers.has(u)).length;
+    const notFollowingTotal = state.notFollowingBack.length;
+    
+    if (notFollowingTotal > 0) {
+        const progressFill = document.getElementById('progressFillNotFollowing');
+        const progressText = document.getElementById('progressTextNotFollowing');
+        
+        if (progressFill && progressText) {
+            const percentage = (notFollowingReviewed / notFollowingTotal) * 100;
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = `${notFollowingReviewed} de ${notFollowingTotal} revisados`;
+        }
+    }
+}
 
 // Función para toggle nota
 function toggleNote(username) {
