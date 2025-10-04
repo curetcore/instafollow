@@ -1,6 +1,25 @@
-Version: 6.0.1
+Version: 6.0.3
 Date: 2025-10-04
 Changes:
+- IMPROVED: Visual indication for reviewed profiles
+  - Reviewed profiles now appear gray and more opaque (60% opacity)
+  - Avatar images have grayscale filter
+  - Makes it much easier to identify which profiles you've already checked
+  - Check mark remains bright green for clear visibility
+- CONFIRMED: Profile links already open in new tabs (target="_blank")
+  - Clicking Instagram links opens them in new tab while keeping you on the app
+
+Previous v6.0.2 changes:
+- IMPLEMENTED: Discrete sidebar for loaded files
+  - Floating button with "Archivos" text
+  - Shows list of all loaded files
+  - Click any file to view its contents in a modal
+  - Responsive design for mobile devices
+- FIXED: Export functions now properly exposed to global scope
+- MAINTAINED: Export notes only appears as floating button
+- IMPROVED: Better file navigation and organization
+
+Previous v6.0.1 changes:
 - FIXED: Restored all previous functionality that was accidentally removed
 - All analysis features remain intact:
   - Main analysis with "No te siguen", "Amigos mutuos", "Tus fans"

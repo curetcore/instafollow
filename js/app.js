@@ -162,50 +162,87 @@ function hideLoadingSection() {
 
 // Crear pestañas dinámicas para cada archivo
 function createDynamicTabs() {
-    // Crear contenedor para las nuevas pestañas
-    const dynamicSection = document.createElement('div');
-    dynamicSection.className = 'dynamic-files-section';
-    dynamicSection.innerHTML = `
-        <h2 style="text-align: center; margin-bottom: 30px;">📂 Archivos de Instagram Cargados</h2>
-        <div class="files-tabs-container">
-            <div class="files-tabs"></div>
-            <div class="files-content"></div>
+    // Crear sidebar flotante
+    const sidebar = document.createElement('div');
+    sidebar.className = 'files-sidebar';
+    sidebar.innerHTML = `
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12h18M3 6h18M3 18h18"/>
+            </svg>
+            <span class="sidebar-toggle-text">Archivos</span>
+        </button>
+        <div class="sidebar-content">
+            <div class="sidebar-header">
+                <h3>📂 Archivos Cargados</h3>
+                <button class="sidebar-close" onclick="toggleSidebar()">×</button>
+            </div>
+            <div class="sidebar-files"></div>
         </div>
     `;
     
-    // Insertar después de la sección de análisis
-    const analyzeSection = document.querySelector('.analyze-section');
-    if (analyzeSection && analyzeSection.parentNode) {
-        analyzeSection.parentNode.insertBefore(dynamicSection, analyzeSection.nextSibling);
-    }
+    document.body.appendChild(sidebar);
     
-    const tabsContainer = dynamicSection.querySelector('.files-tabs');
-    const contentContainer = dynamicSection.querySelector('.files-content');
+    const filesContainer = sidebar.querySelector('.sidebar-files');
     
-    // Crear una pestaña por cada archivo cargado
+    // Crear modal para mostrar contenido del archivo
+    const modal = document.createElement('div');
+    modal.className = 'file-modal';
+    modal.id = 'fileModal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle"></h3>
+                <button class="modal-close" onclick="closeFileModal()">×</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Crear un botón por cada archivo cargado
     Object.entries(state.allDataLoaded).forEach(([filename, data], index) => {
         const fileInfo = getFileInfo(filename);
-        const tabId = `file-tab-${index}`;
         
-        // Crear pestaña
-        const tab = document.createElement('button');
-        tab.className = `file-tab ${index === 0 ? 'active' : ''}`;
-        tab.setAttribute('data-tab', tabId);
-        tab.innerHTML = `
-            <span class="file-tab-icon">${fileInfo.icon}</span>
-            <span class="file-tab-name">${fileInfo.name}</span>
-            <span class="file-tab-count">${fileInfo.count}</span>
+        // Crear botón del archivo
+        const fileButton = document.createElement('button');
+        fileButton.className = 'sidebar-file-btn';
+        fileButton.innerHTML = `
+            <span class="sidebar-file-icon">${fileInfo.icon}</span>
+            <span class="sidebar-file-name">${fileInfo.name}</span>
+            <span class="sidebar-file-count">${fileInfo.count}</span>
         `;
-        tab.onclick = () => switchFileTab(tabId);
-        tabsContainer.appendChild(tab);
-        
-        // Crear contenido
-        const content = document.createElement('div');
-        content.className = `file-tab-content ${index === 0 ? 'active' : ''}`;
-        content.id = tabId;
-        content.innerHTML = createFileContent(filename, data, fileInfo);
-        contentContainer.appendChild(content);
+        fileButton.onclick = () => showFileModal(filename, data, fileInfo);
+        filesContainer.appendChild(fileButton);
     });
+}
+
+// Toggle sidebar
+function toggleSidebar() {
+    const sidebar = document.querySelector('.files-sidebar');
+    sidebar.classList.toggle('open');
+}
+
+// Mostrar modal con contenido del archivo
+function showFileModal(filename, data, fileInfo) {
+    const modal = document.getElementById('fileModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.innerHTML = `${fileInfo.icon} ${fileInfo.name}`;
+    modalBody.innerHTML = createFileContent(filename, data, fileInfo);
+    modal.classList.add('show');
+    
+    // Cerrar sidebar en móvil
+    if (window.innerWidth < 768) {
+        toggleSidebar();
+    }
+}
+
+// Cerrar modal
+function closeFileModal() {
+    const modal = document.getElementById('fileModal');
+    modal.classList.remove('show');
 }
 
 // Procesar un archivo individual
@@ -1112,6 +1149,13 @@ function searchInFileContent(input, filename) {
         }
     });
 }
+
+// Exponer funciones al scope global para onclick attributes
+window.toggleSidebar = toggleSidebar;
+window.closeFileModal = closeFileModal;
+window.showFileModal = showFileModal;
+window.searchInFileContent = searchInFileContent;
+window.exportNotes = exportNotes;
 
 // Inicializar cuando el DOM esté listo
 if (document.readyState === 'loading') {

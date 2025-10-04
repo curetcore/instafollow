@@ -628,11 +628,22 @@ main {
 }
 
 .user-item.reviewed {
-    background: rgba(76, 175, 80, 0.03);
+    background: rgba(189, 189, 189, 0.15);
+    opacity: 0.6;
 }
 
 .user-item.reviewed:hover {
-    background: rgba(76, 175, 80, 0.06);
+    background: rgba(189, 189, 189, 0.25);
+    opacity: 0.7;
+}
+
+.user-item.reviewed .username {
+    color: var(--text-secondary);
+}
+
+.user-item.reviewed .user-avatar {
+    filter: grayscale(50%);
+    opacity: 0.7;
 }
 
 .check-mark {
@@ -640,7 +651,12 @@ main {
     font-size: 14px;
     margin-left: 6px;
     font-weight: 400;
-    opacity: 0.7;
+    opacity: 1;
+}
+
+.user-item.reviewed .check-mark {
+    color: #4CAF50;
+    opacity: 1;
 }
 
 .user-avatar {
@@ -939,84 +955,208 @@ footer p {
     }
 }
 
-/* Dynamic Files Section */
-.dynamic-files-section {
-    margin-bottom: 40px;
-    animation: fadeInUp 0.5s ease;
+/* Sidebar for Files */
+.files-sidebar {
+    position: fixed;
+    right: 20px;
+    top: 100px;
+    z-index: 99;
 }
 
-.files-tabs-container {
+.sidebar-toggle {
     background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.files-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-secondary);
-    padding: 8px;
-}
-
-.file-tab {
-    background: transparent;
-    border: 1px solid transparent;
     border-radius: 8px;
     padding: 10px 16px;
     cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 8px;
-    font-family: inherit;
-    font-size: 13px;
     color: var(--text-secondary);
-    margin: 4px;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
-.file-tab:hover {
+.sidebar-toggle:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.sidebar-content {
+    position: absolute;
+    right: 0;
+    top: 50px;
+    width: 280px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    max-height: 70vh;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.files-sidebar.open .sidebar-content {
+    display: flex;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header h3 {
+    font-size: 16px;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.sidebar-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-close:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.sidebar-files {
+    padding: 8px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.sidebar-file-btn {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    text-align: left;
+}
+
+.sidebar-file-btn:hover {
     background: var(--bg);
     border-color: var(--border);
+    transform: translateX(-2px);
 }
 
-.file-tab.active {
-    background: var(--bg);
+.sidebar-file-icon {
+    font-size: 18px;
+}
+
+.sidebar-file-name {
+    flex: 1;
+    font-size: 13px;
     color: var(--text-primary);
-    border-color: var(--ig-primary);
-    font-weight: 600;
-}
-
-.file-tab-icon {
-    font-size: 16px;
-}
-
-.file-tab-count {
-    background: var(--border-light);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 11px;
     font-weight: 500;
 }
 
-.file-tab.active .file-tab-count {
-    background: rgba(228, 64, 95, 0.1);
-    color: var(--ig-primary);
+.sidebar-file-count {
+    background: var(--border-light);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
 }
 
-.files-content {
+/* Modal for File Content */
+.file-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
     padding: 20px;
 }
 
-.file-tab-content {
-    display: none;
-    animation: fadeIn 0.3s ease;
+.file-modal.show {
+    display: flex;
 }
 
-.file-tab-content.active {
-    display: block;
+.modal-content {
+    background: var(--bg);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+    font-size: 20px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .file-content-header {
@@ -1061,18 +1201,19 @@ footer p {
 }
 
 @media (max-width: 768px) {
-    .files-tabs {
-        padding: 4px;
+    .files-sidebar {
+        right: 10px;
+        top: 80px;
     }
     
-    .file-tab {
-        font-size: 12px;
-        padding: 8px 12px;
-        margin: 2px;
+    .sidebar-content {
+        width: calc(100vw - 40px);
+        max-width: 320px;
     }
     
-    .file-tab-icon {
-        font-size: 14px;
+    .modal-content {
+        width: 95%;
+        margin: 10px;
     }
 }
 
@@ -1169,7 +1310,8 @@ footer p {
 }
 
 .insight-item.reviewed {
-    background: rgba(76, 175, 80, 0.05);
+    background: rgba(189, 189, 189, 0.15);
+    opacity: 0.6;
 }
 
 .insight-username:hover {
