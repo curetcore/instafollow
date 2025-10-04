@@ -1,6 +1,13 @@
 # 📥 Cómo obtener tus datos de Instagram
 
-Guía paso a paso para descargar tus seguidores y seguidos de Instagram.
+Guía actualizada paso a paso para descargar tus seguidores y seguidos de Instagram (2025).
+
+## ⚠️ IMPORTANTE - Antes de empezar
+
+1. **El proceso ha cambiado** - Instagram actualizó la interfaz en 2024
+2. **DEBES seleccionar JSON** - NO selecciones HTML o no funcionará
+3. **Solo necesitas "Seguidores y seguidos"** - No descargues todo
+4. **Puede tardar 48 horas** - Ten paciencia
 
 ## 🌐 Método 1: Desde la Web (Recomendado)
 
@@ -13,33 +20,36 @@ Guía paso a paso para descargar tus seguidores y seguidos de Instagram.
 ### Paso 2: Ir a Configuración
 
 1. Click en tu foto de perfil (esquina superior derecha)
-2. Click en **"Configuración"**
-3. En el menú lateral, busca **"Centro de cuentas"**
+2. Click en **"⚙️ Configuración y actividad"** (puede estar en el menú ☰)
+3. Busca y click en **"Centro de cuentas"**
 
-### Paso 3: Solicitar descarga
+### Paso 3: Navegar a Descarga de Información
 
-1. Click en **"Tu información y permisos"**
+1. En Centro de cuentas, busca **"Tu información y permisos"**
 2. Click en **"Descargar tu información"**
 3. Click en **"Descargar o transferir información"**
-4. Selecciona tu cuenta de Instagram
-5. Click en **"Descargar tu información"**
+4. Selecciona **solo tu cuenta de Instagram** (no otras cuentas)
+5. Click en **"Parte de tu información"** (NO "Toda tu información")
 
-### Paso 4: Configurar descarga
+### Paso 4: Configurar descarga - MUY IMPORTANTE
 
-1. **Tipos de información:**
-   - Desmarca "Seleccionar todo"
+1. **Selección de datos:**
+   - ❌ Desmarca todo primero
    - ✅ Marca SOLO: **"Seguidores y seguidos"**
+   - ⚠️ NO marques nada más o tardará mucho más
 
-2. **Formato:**
-   - Selecciona: **JSON** (no HTML)
+2. **Formato - CRÍTICO:**
+   - 🔴 **DEBE SER: JSON**
+   - ❌ **NO selecciones: HTML**
+   - Si eliges HTML, los archivos no funcionarán con esta app
 
-3. **Calidad multimedia:**
-   - No aplica (solo descargamos listas)
+3. **Periodo de tiempo:**
+   - Selecciona: **"Todo el tiempo"** o **"Desde el principio"**
 
-4. **Fecha y rango:**
-   - Selecciona "Todo el tiempo"
+4. **Calidad multimedia:**
+   - No importa (no estamos descargando fotos/videos)
 
-5. Click en **"Crear archivos"**
+5. Click en **"Crear archivos"** o **"Solicitar descarga"**
 
 ### Paso 5: Esperar confirmación
 
@@ -71,27 +81,27 @@ tu-instagram-data/
 
 ## 📱 Método 2: Desde la App Móvil
 
-### En iOS (iPhone)
+### En iOS (iPhone) - Actualizado 2025
 
 1. Abre la app de Instagram
 2. Ve a tu perfil (icono de persona abajo a la derecha)
-3. Toca las **tres líneas** (≡) arriba a la derecha
-4. Toca **"Configuración y privacidad"**
-5. Toca **"Centro de cuentas"**
+3. Toca las **tres líneas** (☰) arriba a la derecha
+4. Toca **"⚙️ Configuración y actividad"** (al final del menú)
+5. En la sección "Cómo usas Instagram", toca **"Centro de cuentas"**
 6. Toca **"Tu información y permisos"**
 7. Toca **"Descargar tu información"**
-8. Sigue los mismos pasos del Método 1 (Paso 4 en adelante)
+8. **IMPORTANTE:** Sigue exactamente los pasos del Método 1 (especialmente elegir JSON)
 
-### En Android
+### En Android - Actualizado 2025
 
 1. Abre la app de Instagram
 2. Ve a tu perfil (icono de persona abajo a la derecha)
-3. Toca las **tres líneas** (≡) arriba a la derecha
-4. Toca **"Configuración y actividad"**
-5. Toca **"Centro de cuentas"**
+3. Toca las **tres líneas** (☰) arriba a la derecha
+4. Toca **"⚙️ Configuración y actividad"**
+5. Desplázate hasta **"Centro de cuentas"** (puede estar bajo "También de Meta")
 6. Toca **"Tu información y permisos"**
 7. Toca **"Descargar tu información"**
-8. Sigue los mismos pasos del Método 1 (Paso 4 en adelante)
+8. **IMPORTANTE:** Sigue exactamente los pasos del Método 1 (especialmente elegir JSON)
 
 ---
 
@@ -173,8 +183,23 @@ tu-instagram-data/
 
 ### "Descargué en HTML por error"
 
-- Tienes que solicitar nuevamente
-- Esta vez selecciona **JSON** como formato
+**¿Cómo sé si descargué HTML?**
+- Los archivos terminan en `.html` no `.json`
+- Al abrirlos se ven como páginas web
+- No funcionan con Instagram Analyzer
+
+**Solución:**
+1. Solicita una nueva descarga
+2. Esta vez ASEGÚRATE de seleccionar **JSON**
+3. En la pantalla de formato, busca estas opciones:
+   - ❌ **HTML** - NO seleccionar
+   - ✅ **JSON** - SÍ seleccionar
+4. Espera el nuevo email
+
+**¿Por qué no funciona HTML?**
+- HTML es para ver en navegador (humanos)
+- JSON es para procesar con código (apps)
+- Esta app necesita JSON para analizar los datos
 
 ---
 
@@ -211,21 +236,51 @@ tu-instagram-data/
 
 ---
 
-## 📊 Formatos alternativos
+## 📊 Diferencia entre JSON y HTML - IMPORTANTE
 
-Instagram puede exportar en dos formatos:
+### ✅ JSON (CORRECTO)
+```json
+{
+  "relationships_following": [
+    {
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/usuario",
+          "value": "usuario",
+          "timestamp": 1234567890
+        }
+      ]
+    }
+  ]
+}
+```
+- **Aspecto:** Texto con llaves `{}` y corchetes `[]`
+- **Extensión:** `.json`
+- **Tamaño:** Pequeño (KB/MB)
+- **Uso:** Para apps y análisis automático
+- **✅ FUNCIONA con Instagram Analyzer**
 
-### JSON (Recomendado)
-- ✅ Fácil de procesar automáticamente
-- ✅ Compacto
-- ✅ Compatible con nuestra app
+### ❌ HTML (INCORRECTO)
+```html
+<html>
+<head><title>Following</title></head>
+<body>
+  <h1>People you follow</h1>
+  <div>usuario</div>
+</body>
+</html>
+```
+- **Aspecto:** Texto con etiquetas `<>` 
+- **Extensión:** `.html`
+- **Tamaño:** Grande (más MB)
+- **Uso:** Para ver en navegador
+- **❌ NO FUNCIONA con Instagram Analyzer**
 
-### HTML
-- ❌ Solo para ver manualmente
-- ❌ Más pesado
-- ❌ No compatible con análisis automático
+## 🎯 Regla Simple
 
-**Siempre usa JSON.**
+**En la pantalla de formato de Instagram:**
+- Si ves **"HTML"** → ❌ NO lo elijas
+- Si ves **"JSON"** → ✅ SÍ lo elijas
 
 ---
 
