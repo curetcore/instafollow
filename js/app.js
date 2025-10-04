@@ -208,14 +208,24 @@ function detectAndProcessFileType(fileName, data) {
     
     // Procesar usuarios con timestamps si están disponibles
     const processedData = extractedData.map(item => {
+        // Caso 1: string_list_data con value
         if (item.string_list_data && item.string_list_data[0]) {
             const userData = item.string_list_data[0];
             return {
-                username: userData.value,
+                username: userData.value || item.title || null,
                 timestamp: userData.timestamp || null,
                 href: userData.href || null
             };
         }
+        // Caso 2: title directamente (formato de following.json)
+        if (item.title) {
+            return {
+                username: item.title,
+                timestamp: item.string_list_data?.[0]?.timestamp || null,
+                href: item.string_list_data?.[0]?.href || null
+            };
+        }
+        // Caso 3: value o el item mismo
         return {
             username: item.value || item,
             timestamp: item.timestamp || null
