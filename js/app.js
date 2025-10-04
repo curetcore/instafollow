@@ -27,6 +27,7 @@ function init() {
     
     setupTabs();
     setupExportButtons();
+    setupSearch();
 }
 
 // Configurar drag and drop
@@ -166,6 +167,11 @@ function displayResults() {
     displayUserList('mutualList', state.mutualFriends);
     displayUserList('fansList', state.fans);
 
+    // Actualizar contadores de búsqueda
+    document.getElementById('countNotFollowing').textContent = `${state.notFollowingBack.length} total`;
+    document.getElementById('countMutual').textContent = `${state.mutualFriends.length} total`;
+    document.getElementById('countFans').textContent = `${state.fans.length} total`;
+
     // Mostrar sección de resultados
     resultsSection.style.display = 'block';
     resultsSection.scrollIntoView({ behavior: 'smooth' });
@@ -253,6 +259,80 @@ function exportToCSV(users, filename) {
         link.click();
         document.body.removeChild(link);
     }
+}
+
+// Configurar búsqueda
+function setupSearch() {
+    const searchInputs = [
+        { input: 'searchNotFollowing', list: 'notFollowingList', count: 'countNotFollowing', data: 'notFollowingBack' },
+        { input: 'searchMutual', list: 'mutualList', count: 'countMutual', data: 'mutualFriends' },
+        { input: 'searchFans', list: 'fansList', count: 'countFans', data: 'fans' }
+    ];
+
+    searchInputs.forEach(({ input, list, count, data }) => {
+        const searchInput = document.getElementById(input);
+        const listElement = document.getElementById(list);
+        const countElement = document.getElementById(count);
+
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const userItems = listElement.querySelectorAll('.user-item');
+            let visibleCount = 0;
+
+            userItems.forEach(item => {
+                const username = item.querySelector('.username').textContent.toLowerCase();
+                
+                if (searchTerm === '') {
+                    item.classList.remove('search-hidden');
+                    // Remover cualquier marca anterior
+                    const usernameElement = item.querySelector('.username');
+                    usernameElement.innerHTML = usernameElement.textContent;
+                    visibleCount++;
+                } else if (username.includes(searchTerm)) {
+                    item.classList.remove('search-hidden');
+                    // Resaltar el término de búsqueda
+                    highlightSearchTerm(item.querySelector('.username'), searchTerm);
+                    visibleCount++;
+                } else {
+                    item.classList.add('search-hidden');
+                }
+            });
+
+            // Actualizar contador
+            if (countElement) {
+                if (searchTerm) {
+                    countElement.textContent = `${visibleCount} de ${state[data].length}`;
+                } else {
+                    countElement.textContent = `${state[data].length} total`;
+                }
+            }
+
+            // Mostrar mensaje si no hay resultados
+            let noResultsMsg = listElement.querySelector('.no-results-message');
+            if (visibleCount === 0 && searchTerm) {
+                if (!noResultsMsg) {
+                    noResultsMsg = document.createElement('div');
+                    noResultsMsg.className = 'no-results-message';
+                    noResultsMsg.style.cssText = 'text-align: center; color: var(--text-secondary); padding: 30px;';
+                    noResultsMsg.textContent = `No se encontraron usuarios que contengan "${searchTerm}"`;
+                    listElement.appendChild(noResultsMsg);
+                } else {
+                    noResultsMsg.textContent = `No se encontraron usuarios que contengan "${searchTerm}"`;
+                }
+            } else if (noResultsMsg) {
+                noResultsMsg.remove();
+            }
+        });
+    });
+}
+
+// Función para resaltar el término de búsqueda
+function highlightSearchTerm(element, searchTerm) {
+    const text = element.textContent;
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    element.innerHTML = text.replace(regex, '<mark>$1</mark>');
 }
 
 // Inicializar cuando el DOM esté listo

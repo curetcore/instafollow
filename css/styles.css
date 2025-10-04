@@ -297,6 +297,58 @@ main {
     color: var(--text);
 }
 
+.search-box {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid var(--border);
+    border-radius: 25px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(225, 48, 108, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: var(--text-secondary);
+}
+
+.search-count {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    background: var(--bg);
+    padding: 0 8px;
+}
+
+.user-item.search-hidden {
+    display: none;
+}
+
+.user-item mark {
+    background: rgba(225, 48, 108, 0.2);
+    color: inherit;
+    border-radius: 3px;
+    padding: 0 2px;
+}
+
 .btn-export {
     background: var(--secondary);
     color: white;
@@ -462,6 +514,20 @@ footer p {
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
+    }
+    
+    .search-input {
+        padding: 10px 40px;
+        font-size: 0.9rem;
+    }
+    
+    .search-icon {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .search-count {
+        font-size: 0.85rem;
     }
 }
 
