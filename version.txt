@@ -1,6 +1,12 @@
-Version: 5.0.1
+Version: 5.0.2
 Date: 2025-10-04
 Changes:
+- Added support for removed_suggestions.json (sugerencias de Instagram que eliminaste)
+- Added support for recent_follow_requests.json (solicitudes permanentes/antiguas)
+- Now recognizes all 12 different Instagram data files
+- Fixed file type detection for these additional files
+
+Previous v5.0.1 changes:
 - Fixed issue with following.json parsing
 - Instagram changed format: following.json uses 'title' field instead of 'value'
 - Now supports both old and new Instagram JSON formats

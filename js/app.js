@@ -13,6 +13,8 @@ const state = {
     blockedProfiles: [],
     restrictedProfiles: [],
     favoritedProfiles: [],
+    removedSuggestions: [],
+    recentFollowRequests: [],
     allDataLoaded: {}
 };
 
@@ -191,7 +193,9 @@ function detectAndProcessFileType(fileName, data) {
         'follow_requests_you\'ve_received.json': { key: 'receivedRequests', name: 'Solicitudes recibidas', dataKey: 'relationships_follow_requests_received' },
         'blocked_profiles.json': { key: 'blockedProfiles', name: 'Bloqueados', dataKey: 'relationships_blocked_users' },
         'restricted_profiles.json': { key: 'restrictedProfiles', name: 'Restringidos', dataKey: 'relationships_restricted_users' },
-        'profiles_you\'ve_favorited.json': { key: 'favoritedProfiles', name: 'Favoritos', dataKey: 'relationships_favorited' }
+        'profiles_you\'ve_favorited.json': { key: 'favoritedProfiles', name: 'Favoritos', dataKey: 'relationships_favorited' },
+        'removed_suggestions.json': { key: 'removedSuggestions', name: 'Sugerencias eliminadas', dataKey: 'relationships_dismissed_suggested_users' },
+        'recent_follow_requests.json': { key: 'recentFollowRequests', name: 'Solicitudes permanentes', dataKey: 'relationships_permanent_follow_requests' }
     };
     
     const fileInfo = fileTypeMap[fileName];
@@ -362,6 +366,32 @@ function displayInsights() {
             state.blockedProfiles
         );
         insightsGrid.appendChild(blockedCard);
+    }
+    
+    // Sugerencias eliminadas
+    if (state.removedSuggestions.length > 0) {
+        const removedCard = createInsightCard(
+            'Sugerencias Eliminadas',
+            '🚮',
+            state.removedSuggestions.length,
+            'sugerencias rechazadas',
+            state.removedSuggestions,
+            true
+        );
+        insightsGrid.appendChild(removedCard);
+    }
+    
+    // Solicitudes permanentes
+    if (state.recentFollowRequests.length > 0) {
+        const permanentCard = createInsightCard(
+            'Solicitudes Permanentes',
+            '🔒',
+            state.recentFollowRequests.length,
+            'solicitudes antiguas',
+            state.recentFollowRequests,
+            true
+        );
+        insightsGrid.appendChild(permanentCard);
     }
 }
 
