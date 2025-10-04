@@ -1,6 +1,21 @@
-Version: 5.1
+Version: 6.0
 Date: 2025-10-04
 Changes:
+- MAJOR UPDATE: Dynamic interface that adapts to loaded files
+- Upload section and instructions disappear after loading files
+- Creates dynamic tabs for each loaded JSON file
+- Each file has its own dedicated view with:
+  - File icon and name
+  - User count
+  - Individual search functionality
+  - Complete user list with all features (review, notes, actions)
+  - Timestamps shown where available
+- All tabs are clickable and switch content smoothly
+- Clean, Instagram-style design for file tabs
+- Responsive design works on all devices
+- Better organization and navigation
+
+Previous v5.1 changes:
 - Added click-to-review functionality: click any user to mark as reviewed
 - Visual check mark (✓) appears for reviewed users
 - Progress bar shows review progress for "No te siguen" list
@@ -11,9 +26,3 @@ Changes:
 - Links in insight cards open Instagram profile in new tab
 - Reviewed users have subtle green background
 - Better visual feedback and user experience
-
-Previous v5.0.2 changes:
-- Added support for removed_suggestions.json (sugerencias de Instagram que eliminaste)
-- Added support for recent_follow_requests.json (solicitudes permanentes/antiguas)
-- Now recognizes all 12 different Instagram data files
-- Fixed file type detection for these additional files

@@ -142,7 +142,70 @@ async function processMultipleFiles(files) {
         analyzeBtn.disabled = false;
         folderUpload.classList.add('uploaded');
         showToast(`${Object.keys(state.allDataLoaded).length} archivos cargados exitosamente`);
+        
+        // Ocultar sección de carga e instrucciones
+        setTimeout(() => {
+            hideLoadingSection();
+            createDynamicTabs();
+        }, 500);
     }
+}
+
+// Ocultar sección de carga e instrucciones
+function hideLoadingSection() {
+    const uploadSection = document.querySelector('.upload-section');
+    const instructionsSection = document.querySelector('.accordion-container');
+    const analyzeSection = document.querySelector('.analyze-section');
+    
+    if (uploadSection) uploadSection.style.display = 'none';
+    if (instructionsSection) instructionsSection.style.display = 'none';
+    if (analyzeSection) analyzeSection.style.display = 'none';
+}
+
+// Crear pestañas dinámicas para cada archivo
+function createDynamicTabs() {
+    // Crear contenedor para las nuevas pestañas
+    const dynamicSection = document.createElement('div');
+    dynamicSection.className = 'dynamic-files-section';
+    dynamicSection.innerHTML = `
+        <h2 style="text-align: center; margin-bottom: 30px;">📂 Archivos de Instagram Cargados</h2>
+        <div class="files-tabs-container">
+            <div class="files-tabs"></div>
+            <div class="files-content"></div>
+        </div>
+    `;
+    
+    // Insertar después del header
+    const main = document.querySelector('main');
+    main.insertBefore(dynamicSection, main.firstChild);
+    
+    const tabsContainer = dynamicSection.querySelector('.files-tabs');
+    const contentContainer = dynamicSection.querySelector('.files-content');
+    
+    // Crear una pestaña por cada archivo cargado
+    Object.entries(state.allDataLoaded).forEach(([filename, data], index) => {
+        const fileInfo = getFileInfo(filename);
+        const tabId = `file-tab-${index}`;
+        
+        // Crear pestaña
+        const tab = document.createElement('button');
+        tab.className = `file-tab ${index === 0 ? 'active' : ''}`;
+        tab.setAttribute('data-tab', tabId);
+        tab.innerHTML = `
+            <span class="file-tab-icon">${fileInfo.icon}</span>
+            <span class="file-tab-name">${fileInfo.name}</span>
+            <span class="file-tab-count">${fileInfo.count}</span>
+        `;
+        tab.onclick = () => switchFileTab(tabId);
+        tabsContainer.appendChild(tab);
+        
+        // Crear contenido
+        const content = document.createElement('div');
+        content.className = `file-tab-content ${index === 0 ? 'active' : ''}`;
+        content.id = tabId;
+        content.innerHTML = createFileContent(filename, data, fileInfo);
+        contentContainer.appendChild(content);
+    });
 }
 
 // Procesar un archivo individual
@@ -877,6 +940,177 @@ function showToast(message) {
             toast.remove();
         }, 300);
     }, 2000);
+}
+
+// Obtener información del archivo
+function getFileInfo(filename) {
+    const fileTypeMap = {
+        'followers_1.json': { icon: '👥', name: 'Seguidores' },
+        'followers.json': { icon: '👥', name: 'Seguidores' },
+        'following.json': { icon: '➡️', name: 'Seguidos' },
+        'close_friends.json': { icon: '💚', name: 'Amigos Cercanos' },
+        'recently_unfollowed_profiles.json': { icon: '👋', name: 'Dejados de Seguir' },
+        'pending_follow_requests.json': { icon: '⏳', name: 'Solicitudes Enviadas' },
+        'follow_requests_you\'ve_received.json': { icon: '📨', name: 'Solicitudes Recibidas' },
+        'blocked_profiles.json': { icon: '🚫', name: 'Bloqueados' },
+        'restricted_profiles.json': { icon: '🔒', name: 'Restringidos' },
+        'profiles_you\'ve_favorited.json': { icon: '⭐', name: 'Favoritos' },
+        'removed_suggestions.json': { icon: '🚮', name: 'Sugerencias Eliminadas' },
+        'recent_follow_requests.json': { icon: '🔐', name: 'Solicitudes Permanentes' }
+    };
+    
+    const info = fileTypeMap[filename] || { icon: '📄', name: filename };
+    
+    // Obtener conteo
+    let count = 0;
+    if (filename.includes('followers')) count = state.followers?.length || 0;
+    else if (filename.includes('following.json')) count = state.following?.length || 0;
+    else {
+        const stateKey = Object.entries(fileTypeMap).find(([file]) => file === filename)?.[0];
+        if (stateKey) {
+            const mappedKey = detectAndProcessFileType(filename, {})?.key;
+            count = state[mappedKey]?.length || 0;
+        }
+    }
+    
+    return { ...info, count };
+}
+
+// Cambiar pestaña de archivo
+function switchFileTab(tabId) {
+    // Remover active de todas las pestañas
+    document.querySelectorAll('.file-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.file-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Activar la pestaña seleccionada
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+}
+
+// Crear contenido para cada archivo
+function createFileContent(filename, data, fileInfo) {
+    const users = extractUsersFromFile(filename, data);
+    
+    if (!users || users.length === 0) {
+        return `
+            <div class="file-content-empty">
+                <p>No hay datos en este archivo</p>
+            </div>
+        `;
+    }
+    
+    // Crear lista de usuarios con funcionalidad completa
+    const usersList = users.map(user => {
+        const username = user.username || user;
+        const isReviewed = reviewedUsers.has(username);
+        const hasNote = userNotes[username];
+        const timestamp = user.timestamp;
+        const dateStr = timestamp ? new Date(timestamp * 1000).toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        }) : '';
+        
+        return `
+            <div class="user-item ${isReviewed ? 'reviewed' : ''}" 
+                 data-username="${username}" 
+                 onclick="toggleReviewed('${username}')">
+                <div class="user-avatar">${username.charAt(0).toUpperCase()}</div>
+                <div class="user-info">
+                    <div class="username">
+                        @${username}
+                        ${isReviewed ? '<span class="check-mark">✓</span>' : ''}
+                    </div>
+                    ${hasNote ? `<div class="user-note">${userNotes[username]}</div>` : ''}
+                    ${dateStr ? `<div class="user-date">${dateStr}</div>` : ''}
+                    <div class="user-actions">
+                        <a href="https://instagram.com/${username}" target="_blank" class="action-btn action-profile" title="Ver perfil" onclick="event.stopPropagation()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </a>
+                        <button class="action-btn action-copy" onclick="event.stopPropagation(); copyUsername('${username}')" title="Copiar username">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn action-note ${hasNote ? 'has-note' : ''}" onclick="event.stopPropagation(); toggleNote('${username}')" title="${hasNote ? `Ver/Editar nota: "${userNotes[username]}"` : 'Agregar nota'}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    return `
+        <div class="file-content-header">
+            <h3>${fileInfo.icon} ${fileInfo.name}</h3>
+            <span class="file-count">${users.length} usuarios</span>
+        </div>
+        <div class="file-content-search">
+            <input type="text" class="search-input" placeholder="Buscar en ${fileInfo.name}..." onkeyup="searchInFileContent(this, '${filename}')">
+        </div>
+        <div class="user-list file-user-list" data-filename="${filename}">
+            ${usersList}
+        </div>
+    `;
+}
+
+// Extraer usuarios de un archivo
+function extractUsersFromFile(filename, data) {
+    // Usar la función existente para detectar y procesar
+    const processed = detectAndProcessFileType(filename, data);
+    if (!processed) return [];
+    
+    // Obtener los datos según el tipo
+    if (filename.includes('followers')) return state.followers || [];
+    if (filename.includes('following.json')) return state.following || [];
+    
+    // Para otros archivos, obtener del estado
+    const fileTypeMap = {
+        'close_friends.json': 'closeFriends',
+        'recently_unfollowed_profiles.json': 'recentlyUnfollowed',
+        'pending_follow_requests.json': 'pendingRequests',
+        'follow_requests_you\'ve_received.json': 'receivedRequests',
+        'blocked_profiles.json': 'blockedProfiles',
+        'restricted_profiles.json': 'restrictedProfiles',
+        'profiles_you\'ve_favorited.json': 'favoritedProfiles',
+        'removed_suggestions.json': 'removedSuggestions',
+        'recent_follow_requests.json': 'recentFollowRequests'
+    };
+    
+    const stateKey = fileTypeMap[filename];
+    return state[stateKey] || [];
+}
+
+// Buscar en el contenido del archivo
+function searchInFileContent(input, filename) {
+    const searchTerm = input.value.toLowerCase();
+    const listElement = document.querySelector(`.file-user-list[data-filename="${filename}"]`);
+    const items = listElement.querySelectorAll('.user-item');
+    
+    items.forEach(item => {
+        const username = item.querySelector('.username').textContent.toLowerCase();
+        if (searchTerm === '' || username.includes(searchTerm)) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
 }
 
 // Inicializar cuando el DOM esté listo
