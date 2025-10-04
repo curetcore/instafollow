@@ -4,57 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instagram Analyzer - Analiza tus Seguidores</title>
-    <link rel="stylesheet" href="css/styles.css?v=3.0">
+    <link rel="stylesheet" href="css/styles.css?v=4.0">
 </head>
 <body>
+    <header>
+        <div class="header-content">
+            <div>
+                <h1>Instagram Analyzer</h1>
+                <p class="subtitle">Descubre quién no te sigue de vuelta</p>
+            </div>
+        </div>
+    </header>
+    
     <div class="container">
-        <header>
-            <h1>📊 Instagram Analyzer</h1>
-            <p class="subtitle">Descubre quién no te sigue de vuelta</p>
-        </header>
 
         <main>
-            <!-- Sección de instrucciones -->
-            <div class="instructions-card">
-                <h2>📝 Cómo obtener tus datos de Instagram</h2>
-                <ol>
-                    <li>
-                        <strong>Abre Instagram</strong> (web o app) → Ve a tu perfil → 
-                        <span class="highlight">⚙️ Configuración y actividad</span>
-                    </li>
-                    <li>
-                        Busca <span class="highlight">Centro de cuentas</span> → 
-                        <span class="highlight">Tu información y permisos</span>
-                    </li>
-                    <li>
-                        Click en <span class="highlight">Descargar tu información</span> → 
-                        <span class="highlight">Descargar o transferir información</span>
-                    </li>
-                    <li>
-                        Selecciona <strong>solo tu cuenta de Instagram</strong> → 
-                        Click en <span class="highlight">Parte de tu información</span>
-                    </li>
-                    <li>
-                        Marca <strong>SOLO</strong> <span class="highlight">✓ Seguidores y seguidos</span> 
-                        (desmarca todo lo demás)
-                    </li>
-                    <li>
-                        <strong class="important">⚠️ IMPORTANTE:</strong> Formato: <span class="highlight">JSON</span> 
-                        <strong>(NO HTML)</strong> • Periodo: <span class="highlight">Todo el tiempo</span>
-                    </li>
-                    <li>
-                        Click en <span class="highlight">Crear archivos</span> → 
-                        Espera el email (puede tardar 1-48 horas)
-                    </li>
-                    <li>
-                        Descarga el ZIP → Busca <code>followers_1.json</code> y <code>following.json</code> 
-                        en la carpeta <code>connections/followers_and_following/</code>
-                    </li>
-                </ol>
-                <p class="instructions-note">
-                    💡 <strong>Tip:</strong> Si Instagram cambió la interfaz, busca siempre 
-                    "Descargar información" o "Download your information"
-                </p>
+            <!-- Sección de instrucciones (Acordeón) -->
+            <div class="accordion-container">
+                <button class="accordion-header" id="instructionsToggle">
+                    <div class="accordion-title">
+                        <svg class="accordion-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <span>¿Cómo obtener tus datos de Instagram?</span>
+                    </div>
+                    <svg class="accordion-arrow" width="12" height="12" viewBox="0 0 12 12">
+                        <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                </button>
+                
+                <div class="accordion-content" id="instructionsContent">
+                    <div class="instructions-inner">
+                        <ol class="instagram-steps">
+                            <li>
+                                <strong>Abre Instagram</strong> → Ve a tu perfil → 
+                                <span class="step-highlight">⚙️ Configuración y actividad</span>
+                            </li>
+                            <li>
+                                Busca <span class="step-highlight">Centro de cuentas</span> → 
+                                <span class="step-highlight">Tu información y permisos</span>
+                            </li>
+                            <li>
+                                Click en <span class="step-highlight">Descargar tu información</span> → 
+                                <span class="step-highlight">Descargar o transferir información</span>
+                            </li>
+                            <li>
+                                Selecciona <strong>solo tu cuenta de Instagram</strong> → 
+                                Click en <span class="step-highlight">Parte de tu información</span>
+                            </li>
+                            <li>
+                                Marca <strong>SOLO</strong> <span class="step-highlight">✓ Seguidores y seguidos</span> 
+                                (desmarca todo lo demás)
+                            </li>
+                            <li class="important-step">
+                                <strong class="error-text">⚠️ IMPORTANTE:</strong> Formato: <span class="step-highlight">JSON</span> 
+                                <strong class="error-text">(NO HTML)</strong> • Periodo: <span class="step-highlight">Todo el tiempo</span>
+                            </li>
+                            <li>
+                                Click en <span class="step-highlight">Crear archivos</span> → 
+                                Espera el email (puede tardar 1-48 horas)
+                            </li>
+                            <li>
+                                Descarga el ZIP → Busca <code>followers_1.json</code> y <code>following.json</code> 
+                                en la carpeta <code>connections/followers_and_following/</code>
+                            </li>
+                        </ol>
+                        <div class="tip-box">
+                            <strong>💡 Tip:</strong> Si Instagram cambió la interfaz, busca siempre 
+                            "Descargar información" o "Download your information"
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Sección de carga de archivos -->
@@ -179,6 +201,6 @@
         </footer>
     </div>
 
-    <script src="js/app.js?v=3.0"></script>
+    <script src="js/app.js?v=4.0"></script>
 </body>
 </html>

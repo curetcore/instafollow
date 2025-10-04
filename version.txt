@@ -1,12 +1,13 @@
-Version: 3.0
+Version: 4.0
 Date: 2025-10-04
 Changes:
-- Complete UI redesign with modern color scheme
-- Removed purple gradient, now using coral/teal palette
-- Added beautiful glassmorphism effects
-- Improved animations and hover states
-- Created example JSON files for testing
-- Enhanced visual hierarchy and readability
-- Better shadows and depth
-- Gradient text effects on statistics
-- Smoother transitions throughout
+- Complete Instagram-style redesign
+- Official Instagram colors and gradients
+- Collapsible accordion for instructions
+- Instagram-like typography and spacing
+- Clean, minimal UI matching Instagram's design
+- Sticky header like Instagram
+- Proper borders and shadows
+- Instagram gradient on logo and buttons
+- Better organized instructions with numbered steps
+- Professional look and feel

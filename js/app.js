@@ -28,6 +28,27 @@ function init() {
     setupTabs();
     setupExportButtons();
     setupSearch();
+    setupAccordion();
+}
+
+// Configurar acordeón
+function setupAccordion() {
+    const accordionHeader = document.getElementById('instructionsToggle');
+    const accordionContent = document.getElementById('instructionsContent');
+    
+    if (!accordionHeader || !accordionContent) return;
+    
+    accordionHeader.addEventListener('click', () => {
+        const isOpen = accordionContent.classList.contains('show');
+        
+        if (isOpen) {
+            accordionContent.classList.remove('show');
+            accordionHeader.classList.remove('active');
+        } else {
+            accordionContent.classList.add('show');
+            accordionHeader.classList.add('active');
+        }
+    });
 }
 
 // Configurar drag and drop
