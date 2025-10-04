@@ -1,6 +1,20 @@
-Version: 6.0
+Version: 6.0.1
 Date: 2025-10-04
 Changes:
+- FIXED: Restored all previous functionality that was accidentally removed
+- All analysis features remain intact:
+  - Main analysis with "No te siguen", "Amigos mutuos", "Tus fans"
+  - "Más insights" tab with all additional data
+  - Progress bars for tracking reviewed users
+  - Search functionality in all lists
+  - Export capabilities
+- NEW: Added dynamic file tabs AFTER the main analysis
+- File tabs appear below the "Analyze" button
+- Each loaded file has its own tab for detailed exploration
+- Upload section and instructions hide after loading
+- Better balance between new features and existing functionality
+
+Previous v6.0 changes:
 - MAJOR UPDATE: Dynamic interface that adapts to loaded files
 - Upload section and instructions disappear after loading files
 - Creates dynamic tabs for each loaded JSON file
@@ -14,15 +28,3 @@ Changes:
 - Clean, Instagram-style design for file tabs
 - Responsive design works on all devices
 - Better organization and navigation
-
-Previous v5.1 changes:
-- Added click-to-review functionality: click any user to mark as reviewed
-- Visual check mark (✓) appears for reviewed users
-- Progress bar shows review progress for "No te siguen" list
-- Reviewed status saved in localStorage (persists between sessions)
-- All insight cards now show complete user lists (not limited to 10)
-- Insight card users are clickable with review functionality
-- Insight card users show note indicator (📝) if they have notes
-- Links in insight cards open Instagram profile in new tab
-- Reviewed users have subtle green background
-- Better visual feedback and user experience

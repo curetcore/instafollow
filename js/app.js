@@ -143,7 +143,7 @@ async function processMultipleFiles(files) {
         folderUpload.classList.add('uploaded');
         showToast(`${Object.keys(state.allDataLoaded).length} archivos cargados exitosamente`);
         
-        // Ocultar sección de carga e instrucciones
+        // Crear pestañas dinámicas sin ocultar nada
         setTimeout(() => {
             hideLoadingSection();
             createDynamicTabs();
@@ -151,15 +151,13 @@ async function processMultipleFiles(files) {
     }
 }
 
-// Ocultar sección de carga e instrucciones
+// Ocultar solo la sección de carga, mantener el resto
 function hideLoadingSection() {
     const uploadSection = document.querySelector('.upload-section');
     const instructionsSection = document.querySelector('.accordion-container');
-    const analyzeSection = document.querySelector('.analyze-section');
     
     if (uploadSection) uploadSection.style.display = 'none';
     if (instructionsSection) instructionsSection.style.display = 'none';
-    if (analyzeSection) analyzeSection.style.display = 'none';
 }
 
 // Crear pestañas dinámicas para cada archivo
@@ -175,9 +173,11 @@ function createDynamicTabs() {
         </div>
     `;
     
-    // Insertar después del header
-    const main = document.querySelector('main');
-    main.insertBefore(dynamicSection, main.firstChild);
+    // Insertar después de la sección de análisis
+    const analyzeSection = document.querySelector('.analyze-section');
+    if (analyzeSection && analyzeSection.parentNode) {
+        analyzeSection.parentNode.insertBefore(dynamicSection, analyzeSection.nextSibling);
+    }
     
     const tabsContainer = dynamicSection.querySelector('.files-tabs');
     const contentContainer = dynamicSection.querySelector('.files-content');
