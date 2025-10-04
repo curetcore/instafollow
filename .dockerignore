@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+PROYECTO-COMPLETO.md
+QUICKSTART.md
+docs/
+
+# Scripts
+deploy.sh
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# User data
+followers_*.json
+following*.json
+!followers_example.json
+!following_example.json
+
+# Logs
+*.log
+
+# SSL certificates
+*.pem
+*.crt
+*.key
