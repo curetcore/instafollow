@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instagram Analyzer - Analiza tus Seguidores</title>
-    <link rel="stylesheet" href="css/styles.css?v=4.0">
+    <link rel="stylesheet" href="css/styles.css?v=5.0">
 </head>
 <body>
     <header>
@@ -81,33 +81,21 @@
 
             <!-- Sección de carga de archivos -->
             <div class="upload-section">
-                <div class="upload-box" id="followersUpload">
+                <div class="upload-box large" id="folderUpload">
                     <div class="upload-content">
                         <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
-                        <h3>Seguidores</h3>
-                        <p>Arrastra <strong>followers.json</strong> aquí</p>
-                        <input type="file" id="followersFile" accept=".json" hidden>
-                        <button class="btn-upload" onclick="document.getElementById('followersFile').click()">
-                            Seleccionar archivo
+                        <h3>Cargar Carpeta de Instagram</h3>
+                        <p>Selecciona la carpeta <strong>followers_and_following</strong></p>
+                        <input type="file" id="folderInput" webkitdirectory directory multiple hidden>
+                        <button class="btn-upload" onclick="document.getElementById('folderInput').click()">
+                            Seleccionar carpeta
                         </button>
-                        <span class="file-name" id="followersFileName"></span>
-                    </div>
-                </div>
-
-                <div class="upload-box" id="followingUpload">
-                    <div class="upload-content">
-                        <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        <h3>Seguidos</h3>
-                        <p>Arrastra <strong>following.json</strong> aquí</p>
-                        <input type="file" id="followingFile" accept=".json" hidden>
-                        <button class="btn-upload" onclick="document.getElementById('followingFile').click()">
-                            Seleccionar archivo
-                        </button>
-                        <span class="file-name" id="followingFileName"></span>
+                        <div id="filesDetected" class="files-detected" style="display: none;">
+                            <h4>Archivos detectados:</h4>
+                            <div id="filesList"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -146,6 +134,7 @@
                     <button class="tab-btn active" data-tab="notFollowing">No te siguen</button>
                     <button class="tab-btn" data-tab="mutual">Amigos mutuos</button>
                     <button class="tab-btn" data-tab="fans">Tus fans</button>
+                    <button class="tab-btn" data-tab="insights">Más insights</button>
                 </div>
 
                 <div class="tab-content active" id="notFollowing">
@@ -192,6 +181,12 @@
                     </div>
                     <div class="user-list" id="fansList"></div>
                 </div>
+
+                <div class="tab-content" id="insights">
+                    <div class="insights-grid" id="insightsGrid">
+                        <!-- Se llenará dinámicamente con JavaScript -->
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -201,6 +196,6 @@
         </footer>
     </div>
 
-    <script src="js/app.js?v=4.0"></script>
+    <script src="js/app.js?v=5.0"></script>
 </body>
 </html>

@@ -1,13 +1,20 @@
-Version: 4.0
+Version: 5.0
 Date: 2025-10-04
 Changes:
-- Complete Instagram-style redesign
-- Official Instagram colors and gradients
-- Collapsible accordion for instructions
-- Instagram-like typography and spacing
-- Clean, minimal UI matching Instagram's design
-- Sticky header like Instagram
-- Proper borders and shadows
-- Instagram gradient on logo and buttons
-- Better organized instructions with numbered steps
-- Professional look and feel
+- MAJOR UPDATE: Now supports loading entire Instagram data folder
+- Replaced individual file uploads with single folder selection
+- Automatically detects and processes all JSON files from Instagram export
+- Added support for additional Instagram data files:
+  - Close friends list
+  - Recently unfollowed profiles (with dates)
+  - Pending follow requests sent
+  - Received follow requests
+  - Blocked profiles
+  - Restricted profiles
+  - Favorited profiles
+- New "Más insights" tab showing additional data cards
+- Each insight card shows count and recent entries
+- Timestamps shown where available (unfollows, requests)
+- Improved file detection with visual feedback
+- Shows loading status for each file
+- Backwards compatible with basic followers/following analysis

@@ -4,31 +4,39 @@ const state = {
     following: null,
     notFollowingBack: [],
     mutualFriends: [],
-    fans: []
+    fans: [],
+    // Nuevos datos de Instagram
+    closeFriends: [],
+    recentlyUnfollowed: [],
+    pendingRequests: [],
+    receivedRequests: [],
+    blockedProfiles: [],
+    restrictedProfiles: [],
+    favoritedProfiles: [],
+    allDataLoaded: {}
 };
 
 // Elementos del DOM
-const followersUpload = document.getElementById('followersUpload');
-const followingUpload = document.getElementById('followingUpload');
-const followersFile = document.getElementById('followersFile');
-const followingFile = document.getElementById('followingFile');
+const folderUpload = document.getElementById('folderUpload');
+const folderInput = document.getElementById('folderInput');
 const analyzeBtn = document.getElementById('analyzeBtn');
 const resultsSection = document.getElementById('results');
+const filesDetected = document.getElementById('filesDetected');
+const filesList = document.getElementById('filesList');
 
 // Inicializar eventos
 function init() {
-    setupDragAndDrop(followersUpload, followersFile, 'followers');
-    setupDragAndDrop(followingUpload, followingFile, 'following');
-    
-    followersFile.addEventListener('change', (e) => handleFileSelect(e, 'followers'));
-    followingFile.addEventListener('change', (e) => handleFileSelect(e, 'following'));
-    
+    setupFolderDragAndDrop();
+    folderInput.addEventListener('change', handleFolderSelect);
     analyzeBtn.addEventListener('click', analyzeData);
     
     setupTabs();
     setupExportButtons();
     setupSearch();
     setupAccordion();
+    
+    // Cargar notas guardadas
+    loadNotesFromLocalStorage();
 }
 
 // Configurar acordeón
@@ -51,10 +59,10 @@ function setupAccordion() {
     });
 }
 
-// Configurar drag and drop
-function setupDragAndDrop(uploadBox, fileInput, type) {
+// Configurar drag and drop para carpeta
+function setupFolderDragAndDrop() {
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        uploadBox.addEventListener(eventName, preventDefaults, false);
+        folderUpload.addEventListener(eventName, preventDefaults, false);
     });
 
     function preventDefaults(e) {
@@ -63,92 +71,167 @@ function setupDragAndDrop(uploadBox, fileInput, type) {
     }
 
     ['dragenter', 'dragover'].forEach(eventName => {
-        uploadBox.addEventListener(eventName, () => {
-            uploadBox.classList.add('dragover');
+        folderUpload.addEventListener(eventName, () => {
+            folderUpload.classList.add('dragover');
         });
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
-        uploadBox.addEventListener(eventName, () => {
-            uploadBox.classList.remove('dragover');
+        folderUpload.addEventListener(eventName, () => {
+            folderUpload.classList.remove('dragover');
         });
     });
 
-    uploadBox.addEventListener('drop', (e) => {
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            fileInput.files = files;
-            handleFileSelect({ target: fileInput }, type);
-        }
-    });
-
-    uploadBox.addEventListener('click', () => {
-        fileInput.click();
+    folderUpload.addEventListener('drop', (e) => {
+        const items = e.dataTransfer.items;
+        handleDroppedItems(items);
     });
 }
 
-// Manejar selección de archivos
-function handleFileSelect(event, type) {
-    const file = event.target.files[0];
+// Manejar selección de carpeta
+function handleFolderSelect(event) {
+    const files = Array.from(event.target.files);
+    processMultipleFiles(files);
+}
+
+// Manejar items dropeados
+async function handleDroppedItems(items) {
+    const files = [];
     
-    if (!file) return;
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.kind === 'file') {
+            const file = item.getAsFile();
+            if (file && file.name.endsWith('.json')) {
+                files.push(file);
+            }
+        }
+    }
     
-    if (!file.name.endsWith('.json')) {
-        alert('Por favor, selecciona un archivo JSON válido');
+    if (files.length > 0) {
+        processMultipleFiles(files);
+    }
+}
+
+// Procesar múltiples archivos
+async function processMultipleFiles(files) {
+    const jsonFiles = files.filter(file => file.name.endsWith('.json'));
+    
+    if (jsonFiles.length === 0) {
+        alert('No se encontraron archivos JSON en la carpeta seleccionada.');
         return;
     }
-
-    const reader = new FileReader();
     
-    reader.onload = (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
-            processJSONData(data, type, file.name);
-        } catch (error) {
-            alert('Error al leer el archivo. Asegúrate de que sea un JSON válido de Instagram.');
-            console.error(error);
-        }
-    };
+    // Resetear estado
+    state.allDataLoaded = {};
+    filesList.innerHTML = '';
+    filesDetected.style.display = 'block';
     
-    reader.readAsText(file);
-}
-
-// Procesar datos JSON
-function processJSONData(data, type, fileName) {
-    let users = [];
-    
-    // Diferentes formatos de Instagram
-    if (Array.isArray(data)) {
-        users = data;
-    } else if (data.relationships_following) {
-        users = data.relationships_following;
-    } else if (data.relationships_followers) {
-        users = data.relationships_followers;
-    } else if (data[0] && data[0].string_list_data) {
-        users = data;
+    // Procesar cada archivo
+    for (const file of jsonFiles) {
+        await processFile(file);
     }
     
-    // Extraer usernames
-    const usernames = users.map(item => {
-        if (item.string_list_data && item.string_list_data[0]) {
-            return item.string_list_data[0].value;
-        }
-        return item.value || item;
-    }).filter(Boolean);
-
-    state[type] = usernames;
-    
-    // Actualizar UI
-    const uploadBox = type === 'followers' ? followersUpload : followingUpload;
-    const fileNameSpan = document.getElementById(`${type}FileName`);
-    
-    uploadBox.classList.add('uploaded');
-    fileNameSpan.textContent = `✓ ${fileName} (${usernames.length} usuarios)`;
-    
-    // Activar botón de análisis si ambos archivos están cargados
+    // Verificar si tenemos los archivos mínimos necesarios
     if (state.followers && state.following) {
         analyzeBtn.disabled = false;
+        folderUpload.classList.add('uploaded');
+        showToast(`${Object.keys(state.allDataLoaded).length} archivos cargados exitosamente`);
     }
+}
+
+// Procesar un archivo individual
+async function processFile(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
+            <span>${file.name}</span>
+            <span class="file-status">Cargando...</span>
+        `;
+        filesList.appendChild(fileItem);
+        
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                const processed = detectAndProcessFileType(file.name, data);
+                
+                if (processed) {
+                    state.allDataLoaded[file.name] = data;
+                    fileItem.classList.add('success');
+                    fileItem.querySelector('.file-status').textContent = `✓ ${processed}`;
+                } else {
+                    fileItem.classList.add('error');
+                    fileItem.querySelector('.file-status').textContent = '✗ No reconocido';
+                }
+            } catch (error) {
+                fileItem.classList.add('error');
+                fileItem.querySelector('.file-status').textContent = '✗ Error al leer';
+                console.error(`Error procesando ${file.name}:`, error);
+            }
+            resolve();
+        };
+        
+        reader.readAsText(file);
+    });
+}
+
+// Detectar y procesar tipo de archivo
+function detectAndProcessFileType(fileName, data) {
+    // Mapeo de archivos conocidos
+    const fileTypeMap = {
+        'followers_1.json': { key: 'followers', name: 'Seguidores', dataKey: 'relationships_followers' },
+        'followers.json': { key: 'followers', name: 'Seguidores', dataKey: 'relationships_followers' },
+        'following.json': { key: 'following', name: 'Seguidos', dataKey: 'relationships_following' },
+        'close_friends.json': { key: 'closeFriends', name: 'Amigos cercanos', dataKey: 'relationships_close_friends' },
+        'recently_unfollowed_profiles.json': { key: 'recentlyUnfollowed', name: 'Dejados de seguir', dataKey: 'relationships_unfollowed_users' },
+        'pending_follow_requests.json': { key: 'pendingRequests', name: 'Solicitudes enviadas', dataKey: 'relationships_follow_requests_sent' },
+        'follow_requests_you\'ve_received.json': { key: 'receivedRequests', name: 'Solicitudes recibidas', dataKey: 'relationships_follow_requests_received' },
+        'blocked_profiles.json': { key: 'blockedProfiles', name: 'Bloqueados', dataKey: 'relationships_blocked_users' },
+        'restricted_profiles.json': { key: 'restrictedProfiles', name: 'Restringidos', dataKey: 'relationships_restricted_users' },
+        'profiles_you\'ve_favorited.json': { key: 'favoritedProfiles', name: 'Favoritos', dataKey: 'relationships_favorited' }
+    };
+    
+    const fileInfo = fileTypeMap[fileName];
+    if (!fileInfo) return null;
+    
+    // Extraer datos según el formato
+    let extractedData = [];
+    
+    if (data[fileInfo.dataKey]) {
+        extractedData = data[fileInfo.dataKey];
+    } else if (Array.isArray(data)) {
+        extractedData = data;
+    }
+    
+    // Procesar usuarios con timestamps si están disponibles
+    const processedData = extractedData.map(item => {
+        if (item.string_list_data && item.string_list_data[0]) {
+            const userData = item.string_list_data[0];
+            return {
+                username: userData.value,
+                timestamp: userData.timestamp || null,
+                href: userData.href || null
+            };
+        }
+        return {
+            username: item.value || item,
+            timestamp: item.timestamp || null
+        };
+    }).filter(item => item.username);
+    
+    // Guardar en el estado
+    if (fileInfo.key === 'followers' || fileInfo.key === 'following') {
+        // Para compatibilidad, guardar solo usernames
+        state[fileInfo.key] = processedData.map(item => item.username);
+    } else {
+        // Para otros datos, guardar objeto completo
+        state[fileInfo.key] = processedData;
+    }
+    
+    return `${fileInfo.name} (${processedData.length})`;
 }
 
 // Analizar datos
@@ -193,9 +276,121 @@ function displayResults() {
     document.getElementById('countMutual').textContent = `${state.mutualFriends.length} total`;
     document.getElementById('countFans').textContent = `${state.fans.length} total`;
 
+    // Mostrar insights si hay datos adicionales
+    displayInsights();
+
     // Mostrar sección de resultados
     resultsSection.style.display = 'block';
     resultsSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Mostrar insights adicionales
+function displayInsights() {
+    const insightsGrid = document.getElementById('insightsGrid');
+    insightsGrid.innerHTML = '';
+    
+    // Amigos cercanos
+    if (state.closeFriends.length > 0) {
+        const closeFriendsCard = createInsightCard(
+            'Amigos Cercanos',
+            '💚',
+            state.closeFriends.length,
+            'amigos cercanos',
+            state.closeFriends.map(user => ({
+                username: user.username,
+                isFollowingBack: state.followers.includes(user.username)
+            }))
+        );
+        insightsGrid.appendChild(closeFriendsCard);
+    }
+    
+    // Dejados de seguir recientemente
+    if (state.recentlyUnfollowed.length > 0) {
+        const unfollowedCard = createInsightCard(
+            'Dejaste de Seguir',
+            '👋',
+            state.recentlyUnfollowed.length,
+            'unfollows recientes',
+            state.recentlyUnfollowed,
+            true
+        );
+        insightsGrid.appendChild(unfollowedCard);
+    }
+    
+    // Solicitudes pendientes
+    if (state.pendingRequests.length > 0) {
+        const pendingCard = createInsightCard(
+            'Solicitudes Enviadas',
+            '⏳',
+            state.pendingRequests.length,
+            'pendientes',
+            state.pendingRequests,
+            true
+        );
+        insightsGrid.appendChild(pendingCard);
+    }
+    
+    // Solicitudes recibidas
+    if (state.receivedRequests.length > 0) {
+        const receivedCard = createInsightCard(
+            'Solicitudes Recibidas',
+            '📨',
+            state.receivedRequests.length,
+            'esperando respuesta',
+            state.receivedRequests
+        );
+        insightsGrid.appendChild(receivedCard);
+    }
+    
+    // Perfiles bloqueados
+    if (state.blockedProfiles.length > 0) {
+        const blockedCard = createInsightCard(
+            'Bloqueados',
+            '🚫',
+            state.blockedProfiles.length,
+            'perfiles bloqueados',
+            state.blockedProfiles
+        );
+        insightsGrid.appendChild(blockedCard);
+    }
+}
+
+// Crear tarjeta de insight
+function createInsightCard(title, icon, count, label, users, showDate = false) {
+    const card = document.createElement('div');
+    card.className = 'insight-card';
+    
+    const usersList = users.slice(0, 10).map(user => {
+        const dateStr = showDate && user.timestamp ? 
+            new Date(user.timestamp * 1000).toLocaleDateString('es-ES', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric' 
+            }) : '';
+            
+        return `
+            <div class="insight-item">
+                <span class="insight-username">@${user.username}</span>
+                ${dateStr ? `<span class="insight-date">${dateStr}</span>` : ''}
+            </div>
+        `;
+    }).join('');
+    
+    card.innerHTML = `
+        <h3><span class="icon">${icon}</span> ${title}</h3>
+        <div class="insight-info">
+            <span class="insight-count">${count}</span>
+            <span class="insight-label">${label}</span>
+        </div>
+        ${users.length > 0 ? `
+            <div class="insight-list">
+                ${usersList}
+                ${users.length > 10 ? `<div class="insight-item"><em>y ${users.length - 10} más...</em></div>` : ''}
+            </div>
+        ` : ''}
+    `;
+    
+    return card;
 }
 
 // Mostrar lista de usuarios
@@ -209,18 +404,50 @@ function displayUserList(elementId, users) {
 
     listElement.innerHTML = users.map(username => {
         const initial = username.charAt(0).toUpperCase();
+        const hasNote = userNotes[username];
+        const noteText = hasNote ? userNotes[username] : '';
+        
         return `
             <div class="user-item">
                 <div class="user-avatar">${initial}</div>
                 <div class="user-info">
                     <div class="username">@${username}</div>
-                    <a href="https://instagram.com/${username}" target="_blank" class="profile-link">
-                        Ver perfil →
-                    </a>
+                    ${hasNote ? `<div class="user-note">${noteText}</div>` : ''}
+                    <div class="user-actions">
+                        <a href="https://instagram.com/${username}" target="_blank" class="action-btn action-profile" title="Ver perfil">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </a>
+                        <button class="action-btn action-copy" onclick="copyUsername('${username}')" title="Copiar username">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn action-note ${hasNote ? 'has-note' : ''}" onclick="toggleNote('${username}')" title="${hasNote ? `Ver/Editar nota: "${noteText}"` : 'Agregar nota'}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
     }).join('');
+    
+    // Actualizar botones de notas después de renderizar
+    users.forEach(username => {
+        if (userNotes[username]) {
+            updateNoteButton(username);
+        }
+    });
 }
 
 // Configurar tabs
@@ -354,6 +581,176 @@ function highlightSearchTerm(element, searchTerm) {
     const text = element.textContent;
     const regex = new RegExp(`(${searchTerm})`, 'gi');
     element.innerHTML = text.replace(regex, '<mark>$1</mark>');
+}
+
+// Función para copiar username al portapapeles
+function copyUsername(username) {
+    const textToCopy = `@${username}`;
+    
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast(`Username @${username} copiado!`);
+        }).catch(err => {
+            console.error('Error al copiar:', err);
+            fallbackCopy(textToCopy);
+        });
+    } else {
+        fallbackCopy(textToCopy);
+    }
+}
+
+// Fallback para copiar
+function fallbackCopy(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showToast('Username copiado!');
+    } catch (error) {
+        console.error('Error al copiar:', error);
+    } finally {
+        document.body.removeChild(textArea);
+    }
+}
+
+// Objeto global para notas de usuarios
+let userNotes = {};
+
+// Función para toggle nota
+function toggleNote(username) {
+    const existingNote = userNotes[username];
+    
+    if (existingNote) {
+        // Si ya tiene nota, mostrar/editar
+        const newNote = prompt(`Nota para @${username}:`, existingNote);
+        if (newNote !== null) {
+            if (newNote.trim()) {
+                userNotes[username] = newNote.trim();
+                showToast(`Nota actualizada para @${username}`);
+            } else {
+                delete userNotes[username];
+                showToast(`Nota eliminada para @${username}`);
+            }
+            updateNoteButton(username);
+            saveNotesToLocalStorage();
+        }
+    } else {
+        // Nueva nota
+        const newNote = prompt(`Agregar nota para @${username}:`);
+        if (newNote && newNote.trim()) {
+            userNotes[username] = newNote.trim();
+            updateNoteButton(username);
+            saveNotesToLocalStorage();
+            showToast(`Nota agregada para @${username}`);
+        }
+    }
+}
+
+// Actualizar botón de nota
+function updateNoteButton(username) {
+    const buttons = document.querySelectorAll(`button[onclick="toggleNote('${username}')"]`);
+    buttons.forEach(button => {
+        if (userNotes[username]) {
+            button.classList.add('has-note');
+            button.title = `Ver/Editar nota: "${userNotes[username]}"`;
+        } else {
+            button.classList.remove('has-note');
+            button.title = 'Agregar nota';
+        }
+    });
+    
+    // Actualizar contador de notas
+    updateNotesCounter();
+}
+
+// Actualizar contador de notas
+function updateNotesCounter() {
+    let counter = document.getElementById('notesManager');
+    const notesCount = Object.keys(userNotes).length;
+    
+    if (!counter && notesCount > 0) {
+        counter = document.createElement('div');
+        counter.id = 'notesManager';
+        counter.className = 'notes-manager';
+        document.body.appendChild(counter);
+    }
+    
+    if (counter) {
+        if (notesCount > 0) {
+            counter.innerHTML = `
+                <span>${notesCount} ${notesCount === 1 ? 'nota' : 'notas'}</span>
+                <button onclick="exportNotes()" class="btn-export-notes">Exportar notas</button>
+            `;
+            counter.style.display = 'flex';
+        } else {
+            counter.style.display = 'none';
+        }
+    }
+}
+
+// Guardar notas en localStorage
+function saveNotesToLocalStorage() {
+    localStorage.setItem('instagramAnalyzerNotes', JSON.stringify(userNotes));
+}
+
+// Cargar notas desde localStorage
+function loadNotesFromLocalStorage() {
+    const saved = localStorage.getItem('instagramAnalyzerNotes');
+    if (saved) {
+        userNotes = JSON.parse(saved);
+        updateNotesCounter();
+    }
+}
+
+// Exportar notas
+function exportNotes() {
+    if (Object.keys(userNotes).length === 0) {
+        alert('No hay notas para exportar');
+        return;
+    }
+    
+    const csvContent = 'Username,Nota\n' + 
+        Object.entries(userNotes)
+            .map(([username, note]) => `@${username},"${note.replace(/"/g, '""')}"`)
+            .join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'notas-usuarios.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Mostrar notificación toast
+function showToast(message) {
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 2000);
 }
 
 // Inicializar cuando el DOM esté listo
