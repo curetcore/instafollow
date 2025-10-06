@@ -659,6 +659,69 @@ main {
     opacity: 1;
 }
 
+/* Estilos para bots */
+.user-item.is-bot {
+    background: #fff8f0;
+    padding-left: 13px;
+}
+
+.bot-indicator {
+    display: inline-flex;
+    align-items: center;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.bot-warning {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.filter-btn {
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.bot-card {
+    background: linear-gradient(135deg, #fff8f0 0%, #ffe8d6 100%);
+    border: 1px solid #ffcc80;
+}
+
+.bot-item {
+    background: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+    border-radius: 6px;
+}
+
+.bot-score {
+    font-size: 11px !important;
+}
+
+.bot-stats-mini {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
 .user-avatar {
     width: 44px;
     height: 44px;

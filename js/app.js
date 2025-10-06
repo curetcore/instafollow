@@ -15,7 +15,10 @@ const state = {
     favoritedProfiles: [],
     removedSuggestions: [],
     recentFollowRequests: [],
-    allDataLoaded: {}
+    allDataLoaded: {},
+    // Sistema de detección de bots
+    botScores: {},
+    suspiciousAccounts: []
 };
 
 // Elementos del DOM
@@ -371,6 +374,9 @@ function analyzeData() {
     // Tus fans (te siguen pero tú no los sigues)
     state.fans = state.followers.filter(user => !followingSet.has(user));
 
+    // Analizar bots
+    analyzeBots();
+
     // Mostrar resultados
     displayResults();
 }
@@ -393,6 +399,9 @@ function displayResults() {
     document.getElementById('countMutual').textContent = `${state.mutualFriends.length} total`;
     document.getElementById('countFans').textContent = `${state.fans.length} total`;
 
+    // Mostrar estadísticas de bots
+    updateBotStats();
+
     // Mostrar insights si hay datos adicionales
     displayInsights();
     
@@ -402,6 +411,142 @@ function displayResults() {
     // Mostrar sección de resultados
     resultsSection.style.display = 'block';
     resultsSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Sistema de detección de bots
+function analyzeBots() {
+    state.botScores = {};
+    state.suspiciousAccounts = [];
+    
+    // Analizar todos los usuarios
+    const allUsers = [...new Set([...state.followers, ...state.following])];
+    
+    allUsers.forEach(username => {
+        const score = calculateBotScore(username);
+        state.botScores[username] = score;
+        
+        if (score >= 70) {
+            state.suspiciousAccounts.push({
+                username,
+                score,
+                reasons: getBotReasons(username, score)
+            });
+        }
+    });
+    
+    // Ordenar cuentas sospechosas por score
+    state.suspiciousAccounts.sort((a, b) => b.score - a.score);
+}
+
+// Calcular puntuación de bot (0-100, mayor = más probable bot)
+function calculateBotScore(username) {
+    let score = 0;
+    const reasons = [];
+    
+    // 1. Patrones en el username (30 puntos max)
+    // Muchos números al final
+    if (/\d{4,}$/.test(username)) {
+        score += 20;
+        reasons.push('Muchos números al final');
+    }
+    // Username genérico con números
+    if (/^[a-z]+\d{3,}$/.test(username.toLowerCase())) {
+        score += 15;
+        reasons.push('Nombre genérico con números');
+    }
+    // Muchos underscores o puntos
+    if ((username.match(/[._]/g) || []).length >= 3) {
+        score += 10;
+        reasons.push('Muchos caracteres especiales');
+    }
+    // Username muy corto o muy largo
+    if (username.length <= 3 || username.length >= 25) {
+        score += 10;
+        reasons.push('Longitud inusual');
+    }
+    
+    // 2. Comportamiento de seguimiento (40 puntos max)
+    const isFollower = state.followers.includes(username);
+    const isFollowing = state.following.includes(username);
+    
+    // Te sigue pero tú no (comportamiento común de bots)
+    if (isFollower && !isFollowing) {
+        score += 15;
+        reasons.push('Te sigue pero tú no');
+        
+        // Si además está en fans con patrón sospechoso
+        if (state.fans.includes(username)) {
+            score += 10;
+        }
+    }
+    
+    // 3. Patrones específicos de bots conocidos (30 puntos)
+    // Keywords comunes en bots
+    const botKeywords = ['follow', 'likes', 'gram', 'insta', 'bot', 'auto', 'boost', 'promo', 'shop', 'sale', 'deal', 'buy', 'click'];
+    const lowerUsername = username.toLowerCase();
+    
+    if (botKeywords.some(keyword => lowerUsername.includes(keyword))) {
+        score += 20;
+        reasons.push('Contiene palabras sospechosas');
+    }
+    
+    // Patrones de spam
+    if (/(.)\1{3,}/.test(username)) {
+        score += 15;
+        reasons.push('Caracteres repetidos');
+    }
+    
+    // Username aleatorio (consonantes y vocales mezcladas sin sentido)
+    if (isRandomUsername(username)) {
+        score += 25;
+        reasons.push('Nombre aleatorio');
+    }
+    
+    return Math.min(score, 100);
+}
+
+// Detectar usernames aleatorios
+function isRandomUsername(username) {
+    const cleaned = username.replace(/[0-9._]/g, '').toLowerCase();
+    if (cleaned.length < 4) return false;
+    
+    // Contar transiciones consonante-vocal
+    let transitions = 0;
+    let lastWasVowel = null;
+    const vowels = 'aeiou';
+    
+    for (let char of cleaned) {
+        const isVowel = vowels.includes(char);
+        if (lastWasVowel !== null && lastWasVowel !== isVowel) {
+            transitions++;
+        }
+        lastWasVowel = isVowel;
+    }
+    
+    // Si hay muy pocas vocales o consonantes, es sospechoso
+    const vowelCount = cleaned.split('').filter(c => vowels.includes(c)).length;
+    const consonantCount = cleaned.length - vowelCount;
+    
+    if (vowelCount === 0 || consonantCount === 0) return true;
+    if (transitions > cleaned.length * 0.7) return true;
+    
+    return false;
+}
+
+// Obtener razones del bot score
+function getBotReasons(username, score) {
+    const reasons = [];
+    
+    if (/\d{4,}$/.test(username)) reasons.push('Muchos números');
+    if (/^[a-z]+\d{3,}$/.test(username.toLowerCase())) reasons.push('Patrón genérico');
+    if ((username.match(/[._]/g) || []).length >= 3) reasons.push('Muchos símbolos');
+    
+    const botKeywords = ['follow', 'likes', 'gram', 'insta', 'bot', 'auto', 'boost', 'promo'];
+    if (botKeywords.some(keyword => username.toLowerCase().includes(keyword))) {
+        reasons.push('Keywords sospechosas');
+    }
+    
+    return reasons;
 }
 
 // Mostrar insights adicionales
@@ -499,6 +644,88 @@ function displayInsights() {
         );
         insightsGrid.appendChild(permanentCard);
     }
+    
+    // Cuentas sospechosas (bots)
+    if (state.suspiciousAccounts.length > 0) {
+        const botsCard = createBotInsightCard();
+        insightsGrid.appendChild(botsCard);
+    }
+}
+
+// Crear tarjeta especial para bots detectados
+function createBotInsightCard() {
+    const card = document.createElement('div');
+    card.className = 'insight-card bot-card';
+    
+    // Estadísticas de bots
+    const totalAnalyzed = state.followers.length + state.following.length;
+    const botsInFollowers = state.suspiciousAccounts.filter(bot => 
+        state.followers.includes(bot.username)).length;
+    const botsInFollowing = state.suspiciousAccounts.filter(bot => 
+        state.following.includes(bot.username)).length;
+    
+    const usersList = state.suspiciousAccounts.slice(0, 20).map(bot => {
+        const isReviewed = reviewedUsers.has(bot.username);
+        const hasNote = userNotes[bot.username];
+        const botBadgeColor = bot.score >= 90 ? '#e74c3c' : bot.score >= 80 ? '#f39c12' : '#f1c40f';
+        
+        return `
+            <div class="insight-item bot-item ${isReviewed ? 'reviewed' : ''}" 
+                 data-username="${bot.username}" 
+                 onclick="toggleReviewed('${bot.username}')"
+                 style="cursor: pointer; border-left: 3px solid ${botBadgeColor};">
+                <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                    <a href="https://instagram.com/${bot.username}" 
+                       target="_blank" 
+                       class="insight-username" 
+                       onclick="event.stopPropagation()"
+                       style="text-decoration: none; color: var(--text-primary);">
+                        @${bot.username}
+                    </a>
+                    <span class="bot-score" style="background: ${botBadgeColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                        BOT ${bot.score}%
+                    </span>
+                    ${isReviewed ? '<span class="check-mark">✓</span>' : ''}
+                    ${hasNote ? '<span class="note-indicator" title="' + userNotes[bot.username] + '">📝</span>' : ''}
+                </div>
+                <div class="bot-reasons" style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+                    ${bot.reasons.join(' • ')}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    card.innerHTML = `
+        <h3><span class="icon">🤖</span> Cuentas Sospechosas (Bots)</h3>
+        <div class="insight-info">
+            <span class="insight-count">${state.suspiciousAccounts.length}</span>
+            <span class="insight-label">posibles bots detectados</span>
+        </div>
+        <div class="bot-stats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; padding: 15px; background: var(--bg-secondary); border-radius: 8px;">
+            <div style="text-align: center;">
+                <div style="font-size: 20px; font-weight: 600; color: var(--ig-primary);">${botsInFollowers}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">en tus seguidores</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 20px; font-weight: 600; color: var(--ig-purple);">${botsInFollowing}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">en tus seguidos</div>
+            </div>
+        </div>
+        ${state.suspiciousAccounts.length > 0 ? `
+            <div class="insight-list bot-list">
+                ${usersList}
+                ${state.suspiciousAccounts.length > 20 ? 
+                    `<div style="text-align: center; padding: 10px; color: var(--text-secondary); font-size: 12px;">
+                        Y ${state.suspiciousAccounts.length - 20} más...
+                    </div>` : ''}
+            </div>
+            <button class="btn-export-bots" onclick="exportBots()" style="width: 100%; margin-top: 15px; padding: 10px; background: var(--ig-primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                Exportar Lista de Bots
+            </button>
+        ` : ''}
+    `;
+    
+    return card;
 }
 
 // Crear tarjeta de insight
@@ -569,16 +796,24 @@ function displayUserList(elementId, users) {
         const hasNote = userNotes[username];
         const noteText = hasNote ? userNotes[username] : '';
         const isReviewed = reviewedUsers.has(username);
+        const botScore = state.botScores[username] || 0;
+        const isBot = botScore >= 70;
+        const botBadgeColor = botScore >= 90 ? '#e74c3c' : botScore >= 80 ? '#f39c12' : '#f1c40f';
         
         return `
-            <div class="user-item ${isReviewed ? 'reviewed' : ''}" data-username="${username}" onclick="toggleReviewed('${username}')">
+            <div class="user-item ${isReviewed ? 'reviewed' : ''} ${isBot ? 'is-bot' : ''}" 
+                 data-username="${username}" 
+                 onclick="toggleReviewed('${username}')"
+                 style="${isBot ? `border-left: 3px solid ${botBadgeColor};` : ''}">
                 <div class="user-avatar">${initial}</div>
                 <div class="user-info">
                     <div class="username">
                         @${username}
                         ${isReviewed ? '<span class="check-mark">✓</span>' : ''}
+                        ${isBot ? `<span class="bot-indicator" style="background: ${botBadgeColor}; color: white; padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 600; margin-left: 8px;">BOT ${botScore}%</span>` : ''}
                     </div>
                     ${hasNote ? `<div class="user-note">${noteText}</div>` : ''}
+                    ${isBot ? `<div class="bot-warning" style="font-size: 11px; color: ${botBadgeColor}; margin-top: 2px;">⚠️ Posible bot detectado</div>` : ''}
                     <div class="user-actions">
                         <a href="https://instagram.com/${username}" target="_blank" class="action-btn action-profile" title="Ver perfil" onclick="event.stopPropagation()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1150,12 +1385,117 @@ function searchInFileContent(input, filename) {
     });
 }
 
+// Función para exportar lista de bots
+function exportBots() {
+    if (state.suspiciousAccounts.length === 0) {
+        alert('No hay bots detectados para exportar');
+        return;
+    }
+    
+    // Crear CSV con información detallada de bots
+    const csvContent = 'Username,Bot Score,Razones,En Seguidores,En Seguidos,Profile URL\n' + 
+        state.suspiciousAccounts.map(bot => {
+            const inFollowers = state.followers.includes(bot.username) ? 'Sí' : 'No';
+            const inFollowing = state.following.includes(bot.username) ? 'Sí' : 'No';
+            return `@${bot.username},${bot.score}%,"${bot.reasons.join(', ')}",${inFollowers},${inFollowing},https://instagram.com/${bot.username}`;
+        }).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'bots-detectados.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast(`${state.suspiciousAccounts.length} bots exportados exitosamente`);
+}
+
+// Estado de filtros de bots
+const botFilters = {
+    notFollowingList: false,
+    mutualList: false,
+    fansList: false
+};
+
+// Toggle filtro de bots
+function toggleBotFilter(listId) {
+    botFilters[listId] = !botFilters[listId];
+    const button = document.querySelector(`#toggleBots${listId.charAt(0).toUpperCase() + listId.slice(1).replace('List', '')}`);
+    const items = document.querySelectorAll(`#${listId} .user-item`);
+    
+    if (botFilters[listId]) {
+        // Ocultar bots
+        button.textContent = '🤖 Mostrar Bots';
+        button.style.background = '#ffebee';
+        
+        items.forEach(item => {
+            if (item.classList.contains('is-bot')) {
+                item.style.display = 'none';
+            }
+        });
+    } else {
+        // Mostrar bots
+        button.textContent = '🤖 Ocultar Bots';
+        button.style.background = '#f0f0f0';
+        
+        items.forEach(item => {
+            if (item.classList.contains('is-bot')) {
+                item.style.display = '';
+            }
+        });
+    }
+    
+    // Actualizar contador visible
+    updateVisibleCount(listId);
+}
+
+// Actualizar contador de elementos visibles
+function updateVisibleCount(listId) {
+    const items = document.querySelectorAll(`#${listId} .user-item`);
+    const visibleItems = Array.from(items).filter(item => item.style.display !== 'none');
+    const countElement = document.getElementById(`count${listId.charAt(0).toUpperCase() + listId.slice(1).replace('List', '')}`);
+    
+    if (countElement) {
+        const totalCount = items.length;
+        const visibleCount = visibleItems.length;
+        
+        if (botFilters[listId]) {
+            countElement.textContent = `${visibleCount} de ${totalCount} (bots ocultos)`;
+        } else {
+            countElement.textContent = `${totalCount} total`;
+        }
+    }
+}
+
+// Actualizar estadísticas de bots
+function updateBotStats() {
+    // Contar bots en cada lista
+    const botsInNotFollowing = state.notFollowingBack.filter(u => state.botScores[u] >= 70).length;
+    const botsInMutual = state.mutualFriends.filter(u => state.botScores[u] >= 70).length;
+    const botsInFans = state.fans.filter(u => state.botScores[u] >= 70).length;
+    
+    // Mostrar estadísticas
+    const statsNotFollowing = document.getElementById('botStatsNotFollowing');
+    if (statsNotFollowing && botsInNotFollowing > 0) {
+        statsNotFollowing.style.display = 'block';
+        statsNotFollowing.querySelector('.bot-count').textContent = botsInNotFollowing;
+    }
+}
+
 // Exponer funciones al scope global para onclick attributes
 window.toggleSidebar = toggleSidebar;
 window.closeFileModal = closeFileModal;
 window.showFileModal = showFileModal;
 window.searchInFileContent = searchInFileContent;
 window.exportNotes = exportNotes;
+window.exportBots = exportBots;
+window.copyUsername = copyUsername;
+window.toggleNote = toggleNote;
+window.toggleReviewed = toggleReviewed;
+window.toggleBotFilter = toggleBotFilter;
 
 // Inicializar cuando el DOM esté listo
 if (document.readyState === 'loading') {
